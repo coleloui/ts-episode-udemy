@@ -5,6 +5,11 @@ interface IState {
   favourites: [];
 }
 
+interface IAction {
+  type: string;
+  payload: any;
+}
+
 const initialState: IState = {
   episodes: [],
   favourites: [],
@@ -12,8 +17,13 @@ const initialState: IState = {
 
 export const Store = React.createContext<IState>(initialState);
 
-function reducer() {
-  // empty for now
+function reducer(state: IState, action: IAction): IState {
+  switch (action.type) {
+    case 'FETCH_DATE':
+      return { ...state, episodes: action.payload };
+    default:
+      return state;
+  }
 }
 
 export function StoreProvider(props: any): JSX.Element {
