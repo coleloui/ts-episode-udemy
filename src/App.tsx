@@ -1,13 +1,6 @@
 import React, { useEffect } from 'react';
 import { Store } from './Store';
-
-interface IEpisodeData {
-  id: number;
-  image: { medium: string };
-  name: string;
-  season: number;
-  number: number;
-}
+import { IAction, IEpisodeData } from './interfaces';
 
 function App(): JSX.Element {
   const { state, dispatch } = React.useContext(Store);
@@ -23,17 +16,31 @@ function App(): JSX.Element {
     });
   };
 
+  const toggleFavoriteAction = (episode: IEpisodeData): IAction => {
+    let dispatchObj = { type: 'ADD_FAVORITE', payload: episode };
+    const episodeInFav = state.favorites.includes(episode);
+
+    if (episodeInFav) {
+      const filterEpisode = state.favorites.filter(
+        (fav: IEpisodeData) => fav.id !== episode.id
+      );
+      dispatchObj = { type: 'REMOVE_FAVORITE', payload: filterEpisode };
+    }
+    return dispatch(dispatchObj);
+  };
+
   useEffect(() => {
     state.episodes.length === 0 && fetchDataAction();
   });
-
-  console.log(state.episodes);
 
   return (
     <React.Fragment>
       <header className='header'>
         <h1>gross show</h1>
-        <p>pick your favorite episode</p>
+        <p>
+          pick your favorite episode, current favorite episodes:{' '}
+          {state.favorites.length}
+        </p>
       </header>
 
       <section className='episode-layout'>
@@ -47,7 +54,19 @@ function App(): JSX.Element {
             )}
             <div>{episode.name}</div>
             <section>
-              season: {episode.season} number: {episode.number}
+              <div>
+                season: {episode.season} number: {episode.number}
+              </div>
+              <button
+                type='button'
+                onClick={() => toggleFavoriteAction(episode)}
+              >
+                {state.favorites.find(
+                  (fav: IEpisodeData) => fav.id === episode.id
+                )
+                  ? 'Remove'
+                  : 'Favorite'}
+              </button>
             </section>
           </section>
         ))}
