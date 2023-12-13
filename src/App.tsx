@@ -11,8 +11,7 @@ interface IEpisodeData {
 
 function App(): JSX.Element {
   const { state, dispatch } = React.useContext(Store);
-  const URL =
-    'https://api.tvmaze.com/singlesearch/shows?q=rick-&-morty&embed=episodes';
+  const URL = 'https://api.tvmaze.com/shows/216/episodes';
 
   const fetchDataAction = async () => {
     const data = await fetch(URL);
@@ -20,26 +19,32 @@ function App(): JSX.Element {
 
     return dispatch({
       type: 'FETCH_DATA',
-      payload: dataJSON._embedded.episodes,
+      payload: dataJSON,
     });
   };
 
   useEffect(() => {
     state.episodes.length === 0 && fetchDataAction();
-  }, []);
+  });
+
+  console.log(state.episodes);
 
   return (
     <React.Fragment>
-      <h1>gross show</h1>
-      <p>pick your favorite episode</p>
+      <header className='header'>
+        <h1>gross show</h1>
+        <p>pick your favorite episode</p>
+      </header>
 
-      <section>
+      <section className='episode-layout'>
         {state.episodes.map((episode: IEpisodeData) => (
-          <section key={episode.id}>
-            <img
-              src={episode.image.medium}
-              alt={`Rick and Mort ${episode.name}`}
-            />
+          <section key={episode.id} className='episode-box'>
+            {episode?.image?.medium && (
+              <img
+                src={episode?.image?.medium}
+                alt={`Rick and Mort ${episode.name}`}
+              />
+            )}
             <div>{episode.name}</div>
             <section>
               season: {episode.season} number: {episode.number}
