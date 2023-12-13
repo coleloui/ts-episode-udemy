@@ -1,3 +1,8 @@
+export interface IAction {
+  type: string;
+  payload: any;
+}
+
 export interface IEpisodeData {
   id: number;
   image: { medium: string };
@@ -6,12 +11,11 @@ export interface IEpisodeData {
   number: number;
 }
 
-export interface IState {
-  episodes: Array<IEpisodeData>;
-  favorites: Array<any>;
+export interface IProps {
+  currentSelection: Array<IEpisodeData>;
 }
 
-export interface IAction {
-  type: string;
-  payload: any;
+export interface IState {
+  episodes: Array<IEpisodeData>;
+  favorites: Array<IEpisodeData>;
 }

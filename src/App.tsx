@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Store } from './Store';
-import { IAction, IEpisodeData } from './interfaces';
+
+const EpisodeListLazy = lazy<any>(() => import('./EpisodeList'));
 
 function App(): JSX.Element {
   const { state, dispatch } = React.useContext(Store);
   const URL = 'https://api.tvmaze.com/shows/216/episodes';
+  const [display, setDisplay] = useState('episodes');
 
   const fetchDataAction = async () => {
     const data = await fetch(URL);
@@ -16,19 +18,6 @@ function App(): JSX.Element {
     });
   };
 
-  const toggleFavoriteAction = (episode: IEpisodeData): IAction => {
-    let dispatchObj = { type: 'ADD_FAVORITE', payload: episode };
-    const episodeInFav = state.favorites.includes(episode);
-
-    if (episodeInFav) {
-      const filterEpisode = state.favorites.filter(
-        (fav: IEpisodeData) => fav.id !== episode.id
-      );
-      dispatchObj = { type: 'REMOVE_FAVORITE', payload: filterEpisode };
-    }
-    return dispatch(dispatchObj);
-  };
-
   useEffect(() => {
     state.episodes.length === 0 && fetchDataAction();
   });
@@ -36,41 +25,31 @@ function App(): JSX.Element {
   return (
     <React.Fragment>
       <header className='header'>
-        <h1>gross show</h1>
-        <p>
-          pick your favorite episode, current favorite episodes:{' '}
-          {state.favorites.length}
-        </p>
+        <div>
+          <h2>
+            pick your favorite episode, current favorite episodes:{' '}
+            {state.favorites.length}
+          </h2>
+        </div>
+        <div>
+          <h3>swap between favorites and all shows</h3>
+          <button
+            type='button'
+            onClick={() =>
+              display === 'episodes'
+                ? setDisplay('favorites')
+                : setDisplay('episodes')
+            }
+          >
+            display {display === 'episodes' ? 'favorites' : 'episodes'}
+          </button>
+        </div>
       </header>
-
-      <section className='episode-layout'>
-        {state.episodes.map((episode: IEpisodeData) => (
-          <section key={episode.id} className='episode-box'>
-            {episode?.image?.medium && (
-              <img
-                src={episode?.image?.medium}
-                alt={`Rick and Mort ${episode.name}`}
-              />
-            )}
-            <div>{episode.name}</div>
-            <section>
-              <div>
-                season: {episode.season} number: {episode.number}
-              </div>
-              <button
-                type='button'
-                onClick={() => toggleFavoriteAction(episode)}
-              >
-                {state.favorites.find(
-                  (fav: IEpisodeData) => fav.id === episode.id
-                )
-                  ? 'Remove'
-                  : 'Favorite'}
-              </button>
-            </section>
-          </section>
-        ))}
-      </section>
+      <Suspense fallback={<div>loading...</div>}>
+        <section className='episode-layout'>
+          <EpisodeListLazy currentSelection={state[display]} />
+        </section>
+      </Suspense>
     </React.Fragment>
   );
 }
